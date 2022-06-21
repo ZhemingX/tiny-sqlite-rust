@@ -6,5 +6,5 @@ pub fn print_sqlite_logo() {
     println!(" \\__| |_| |_| |_|  \\__, |         |___/  \\__, | |_| |_|  \\__|  \\___|");
     println!("                   |___/                    |_|");
 
-    println!("\nType \"CTRL-C\" or \"CTRL-D\" to exit the program.\n");
+    println!("\nType \"CTRL-C\" or \"CTRL-D\" or \".exit;\" to exit the program.\n");
 }

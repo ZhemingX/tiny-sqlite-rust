@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 mod cli;
+mod service;
 
 use cli::header::print_sqlite_logo;
 use cli::run_loop;
@@ -26,7 +27,7 @@ fn main() {
 
     print_sqlite_logo();
 
-    run_loop(move |s|{
+    run_loop(move |s| {
         println!("implement sql service!");
-    })
+    });
 }

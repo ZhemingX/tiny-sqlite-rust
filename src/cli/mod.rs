@@ -1,5 +1,7 @@
 pub mod header;
 
+use crate::service::meta_command::{MetaCommandResult, do_meta_command};
+
 use rustyline::error::ReadlineError;
 use rustyline::validate::{ValidationContext, ValidationResult, Validator};
 use rustyline::Editor;
@@ -45,7 +47,20 @@ where
         match readline {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
-                func(&line)
+                
+                // meta command service
+                if line.starts_with(".") {
+                    match do_meta_command(line.as_str()) {
+                        MetaCommandResult::MetaCmdExit => break,
+                        MetaCommandResult::MetaCmdUnrecognizedCmd => {
+                            println!("Unrecognized command '{}'\n", line);
+                            continue;
+                        },
+                        MetaCommandResult::MetaCmdSuccess => continue
+                    }
+                }
+                
+                func(&line);
             }
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");
