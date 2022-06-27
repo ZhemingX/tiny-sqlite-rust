@@ -6,6 +6,7 @@ mod service;
 
 use cli::header::print_sqlite_logo;
 use cli::run_loop;
+use service::prepare_statement::PrepareResult;
 
 use clap::Parser;
 
@@ -28,6 +29,6 @@ fn main() {
     print_sqlite_logo();
 
     run_loop(move |s| {
-        println!("implement sql service!");
+        println!("implement sql service! for {}", s);
     });
 }

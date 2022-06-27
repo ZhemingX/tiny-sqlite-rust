@@ -1,6 +1,8 @@
 pub mod header;
 
-use crate::service::meta_command::{MetaCommandResult, do_meta_command};
+use crate::service::meta_command::{MetaCommandResult, MetaCommandService};
+use crate::service::Statement;
+use crate::service::prepare_statement::{PrepareService, PrepareResult};
 
 use rustyline::error::ReadlineError;
 use rustyline::validate::{ValidationContext, ValidationResult, Validator};
@@ -49,8 +51,9 @@ where
                 rl.add_history_entry(line.as_str());
                 
                 // meta command service
+                let meta_cmd_service = MetaCommandService::new();
                 if line.starts_with(".") {
-                    match do_meta_command(line.as_str()) {
+                    match meta_cmd_service.do_meta_command(line.as_str()) {
                         MetaCommandResult::MetaCmdExit => break,
                         MetaCommandResult::MetaCmdUnrecognizedCmd => {
                             println!("Unrecognized command '{}'\n", line);
@@ -60,6 +63,17 @@ where
                     }
                 }
                 
+                // prepare statement service
+                let prepare_service = PrepareService::new();
+                let mut stmt = Statement::new();
+                let res = prepare_service.prepare_statement(line.as_str(), &mut stmt);
+                
+                if !matches!(res, PrepareResult::PrepareSuccess) {
+                    println!("{}", res);
+                    continue;
+                }
+                println!("{:?}", stmt);
+
                 func(&line);
             }
             Err(ReadlineError::Interrupted) => {
