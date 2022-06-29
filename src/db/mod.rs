@@ -1,8 +1,4 @@
-/*
-db
-
-persistent in file
-
-db file: 
-
-*/
+mod pager;
+mod table;
+mod error;
+mod tree;

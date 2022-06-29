@@ -18,12 +18,12 @@ impl MetaCommandService {
                 // TODO
                 println!("print btree\n");
                 MetaCommandResult::MetaCmdSuccess
-            },
+            }
             ".constants;" => {
                 // TODO
                 println!("print constants\n");
                 MetaCommandResult::MetaCmdSuccess
-            } 
+            }
             _ => {
                 // unrecognized command
                 MetaCommandResult::MetaCmdUnrecognizedCmd
@@ -31,6 +31,3 @@ impl MetaCommandService {
         }
     }
 }
-
-
-

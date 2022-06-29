@@ -1,12 +1,15 @@
-use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
+use std::mem;
 
 mod cli;
+mod db;
 mod service;
+#[macro_use]
+mod util;
 
 use cli::header::print_sqlite_logo;
 use cli::run_loop;
-use service::prepare_statement::PrepareResult;
+use service::Row;
 
 use clap::Parser;
 
