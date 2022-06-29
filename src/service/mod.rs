@@ -1,6 +1,10 @@
 pub mod meta_command;
 pub mod prepare_statement;
 
+use std::fmt;
+
+use super::util::arr2string;
+
 #[derive(Debug)]
 pub enum StatementType {
     StatementInsert,
@@ -26,11 +30,23 @@ pub struct Row {
 
 impl Default for Row {
     fn default() -> Self {
-        Self { 
-            id: 0, 
-            email: ['0'; COLUMN_EMAIL_SIZE + 1], 
-            username: ['0'; COLUMN_USERNAME_SIZE + 1]
+        Self {
+            id: 0,
+            email: ['0'; COLUMN_EMAIL_SIZE + 1],
+            username: ['0'; COLUMN_USERNAME_SIZE + 1],
         }
+    }
+}
+
+impl fmt::Display for Row {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        return write!(
+            f,
+            "({},{},{})",
+            self.id,
+            arr2string(&self.username),
+            arr2string(&self.email)
+        );
     }
 }
 #[derive(Default, Debug)]

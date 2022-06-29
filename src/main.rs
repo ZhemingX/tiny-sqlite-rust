@@ -1,5 +1,4 @@
-use std::path::{Path, PathBuf};
-use std::mem;
+use std::path::PathBuf;
 
 mod cli;
 mod db;
@@ -9,9 +8,9 @@ mod util;
 
 use cli::header::print_sqlite_logo;
 use cli::run_loop;
-use service::Row;
 
 use clap::Parser;
+use libc;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]

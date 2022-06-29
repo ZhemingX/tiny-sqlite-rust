@@ -5,7 +5,7 @@ use crate::db::error::DbError;
 
 use libc::{c_char, c_int, c_void};
 
-const PAGE_SIZE: usize = 4096;
+pub const PAGE_SIZE: usize = 4096;
 const TABLE_MAX_PAGES: usize = 100;
 
 pub type DbResult<T> = Result<T, DbError>;
@@ -19,11 +19,11 @@ pub struct Pager {
 
 impl Default for Pager {
     fn default() -> Self {
-        Self { 
-            file_descripter: 0, 
+        Self {
+            file_descripter: 0,
             file_length: 0,
-            num_pages: 0, 
-            pages: [ptr::null_mut::<c_void>(); TABLE_MAX_PAGES] 
+            num_pages: 0,
+            pages: [ptr::null_mut::<c_void>(); TABLE_MAX_PAGES],
         }
     }
 }
@@ -43,9 +43,7 @@ impl Pager {
             return Err(DbError::Other("Unable to open file".to_string()));
         }
 
-        let file_length = unsafe{
-            libc::lseek(fd, 0, libc::SEEK_END)
-        };
+        let file_length = unsafe { libc::lseek(fd, 0, libc::SEEK_END) };
 
         if file_length as usize % PAGE_SIZE != 0 {
             return Err(DbError::Other(
@@ -84,13 +82,18 @@ impl Pager {
             }
 
             if page_num <= num_pages {
-                unsafe{
-                    libc::lseek(self.file_descripter, (page_num * PAGE_SIZE) as i64, libc::SEEK_SET);
-                    let bytes_read:libc::ssize_t = libc::read(self.file_descripter, page, PAGE_SIZE as usize);
+                unsafe {
+                    libc::lseek(
+                        self.file_descripter,
+                        (page_num * PAGE_SIZE) as i64,
+                        libc::SEEK_SET,
+                    );
+                    let bytes_read: libc::ssize_t =
+                        libc::read(self.file_descripter, page, PAGE_SIZE as usize);
 
                     if bytes_read == -1 {
                         return Err(DbError::Other("Error reading file".to_owned()));
-                      }
+                    }
                 }
             }
 
@@ -110,22 +113,24 @@ impl Pager {
         }
 
         let offset = unsafe {
-            libc::lseek(self.file_descripter, (page_num * PAGE_SIZE) as i64, libc::SEEK_SET)
+            libc::lseek(
+                self.file_descripter,
+                (page_num * PAGE_SIZE) as i64,
+                libc::SEEK_SET,
+            )
         };
 
         if offset == -1 {
             return Err(DbError::Other("Error seeking".to_owned()));
         }
 
-        let bytes_written: libc::ssize_t = unsafe {
-            libc::write(self.file_descripter, self.pages[page_num], PAGE_SIZE)
-        };
+        let bytes_written: libc::ssize_t =
+            unsafe { libc::write(self.file_descripter, self.pages[page_num], PAGE_SIZE) };
 
         if bytes_written == -1 {
             return Err(DbError::Other("Error writing".to_owned()));
         }
-        
+
         Ok(())
     }
-
 }

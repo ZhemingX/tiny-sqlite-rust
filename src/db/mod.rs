@@ -1,4 +1,5 @@
+mod cursor;
+mod error;
 mod pager;
 mod table;
-mod error;
 mod tree;
