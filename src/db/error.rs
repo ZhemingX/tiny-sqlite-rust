@@ -8,3 +8,5 @@ impl From<std::io::Error> for DbError {
         Self::IoError(e)
     }
 }
+
+pub type DbResult<T> = Result<T, DbError>;

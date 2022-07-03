@@ -1,20 +1,18 @@
 use std::ffi::CString;
 use std::ptr;
 
-use crate::db::error::DbError;
+use crate::db::error::{DbError, DbResult};
 
 use libc::{c_char, c_int, c_void};
 
 pub const PAGE_SIZE: usize = 4096;
-const TABLE_MAX_PAGES: usize = 100;
-
-pub type DbResult<T> = Result<T, DbError>;
+pub const TABLE_MAX_PAGES: usize = 100;
 
 pub struct Pager {
-    file_descripter: c_int,
+    pub file_descripter: c_int,
     file_length: usize,
     pub num_pages: usize,
-    pages: [*mut c_void; TABLE_MAX_PAGES as usize],
+    pub pages: [*mut c_void; TABLE_MAX_PAGES as usize],
 }
 
 impl Default for Pager {
@@ -30,7 +28,8 @@ impl Default for Pager {
 
 impl Pager {
     pub fn new(filename: &str) -> DbResult<Self> {
-        let c_filename = CString::new(filename).unwrap().as_ptr() as *const c_char;
+        let c_filename_cstring = CString::new(filename).unwrap();
+        let c_filename = c_filename_cstring.as_ptr() as *const c_char;
 
         let fd = unsafe {
             libc::open(
@@ -132,5 +131,13 @@ impl Pager {
         }
 
         Ok(())
+    }
+
+    /*
+    Until we start recycling free pages, new pages will always
+    go onto the end of the database file
+    */
+    pub fn get_unused_page_num(&self) -> usize { 
+        return self.num_pages; 
     }
 }

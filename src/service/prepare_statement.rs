@@ -2,7 +2,6 @@ use std::fmt;
 
 use crate::service::{Statement, StatementType};
 use crate::service::{COLUMN_EMAIL_SIZE, COLUMN_USERNAME_SIZE};
-use crate::util::string2arr;
 
 #[derive(Debug)]
 pub enum PrepareResult {
@@ -84,8 +83,8 @@ impl PrepareService {
         };
 
         stmt.row_to_insert.id = id;
-        string2arr(username.to_string(), &mut stmt.row_to_insert.username).unwrap();
-        string2arr(email.to_string(), &mut stmt.row_to_insert.email).unwrap();
+        stmt.row_to_insert.set_username(username);
+        stmt.row_to_insert.set_email(email);
 
         PrepareResult::PrepareSuccess
     }

@@ -1,24 +1,14 @@
-pub fn string2arr(s: String, dst: &mut [char]) -> Result<(), String> {
-    let s_len = s.len();
-    if s_len >= dst.len() {
-        return Err("string length exceeds dst arr length limit".to_owned());
-    }
+use libc::c_char;
+use std::ffi::CString;
 
-    let v: Vec<char> = s.chars().collect();
-    dst[..v.len()].copy_from_slice(&v);
-    dst[v.len()] = '\n';
-
-    Ok(())
+pub fn zascii(slice: &[c_char]) -> String {
+    String::from_iter(slice.iter().take_while(|c| **c != 0).map(|c| *c as u8 as char))
 }
 
-pub fn arr2string(src: &[char]) -> String {
-    let mut s = String::from("");
-    for ch in src {
-        if *ch == '\n' {
-            // compatible with c string
-            break;
-        }
-        s.push(*ch);
+pub fn str2dst(dst: *mut c_char, src: &str) -> *mut c_char {
+    unsafe {
+        let str2cstr = CString::new(src).unwrap();
+        let src = str2cstr.as_ptr() as *const c_char;
+        libc::strcpy(dst, src)
     }
-    s
 }
