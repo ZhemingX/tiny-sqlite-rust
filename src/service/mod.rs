@@ -1,5 +1,6 @@
 pub mod meta_command;
 pub mod prepare_statement;
+pub mod executor;
 
 use std::fmt;
 
@@ -24,7 +25,7 @@ const COLUMN_USERNAME_SIZE: usize = 32;
 const COLUMN_EMAIL_SIZE: usize = 255;
 
 // hard code table row currently.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Row {
     pub id: u32,
     pub email: [c_char; COLUMN_EMAIL_SIZE + 1],
@@ -43,15 +44,14 @@ impl Default for Row {
 
 impl fmt::Display for Row {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        return unsafe {
-            write!(
+        return write!(
             f,
             "({},{},{})",
             self.id,
             zascii(&self.username),
             zascii(&self.email),
             )
-        };
+        ;
     }
 }
 

@@ -1,8 +1,12 @@
 pub mod header;
 
+use std::rc::Rc;
+
 use crate::service::meta_command::{MetaCommandResult, MetaCommandService};
 use crate::service::prepare_statement::{PrepareResult, PrepareService};
+use crate::service::executor::{ExecuteResult, Executor};
 use crate::service::Statement;
+use crate::db::table::Table;
 
 use rustyline::error::ReadlineError;
 use rustyline::validate::{ValidationContext, ValidationResult, Validator};
@@ -35,9 +39,7 @@ impl Validator for EditHelper {
     }
 }
 
-pub fn run_loop<F>(func: F)
-where
-    F: Fn(&str),
+pub fn run_loop(table: Rc<Table>)
 {
     let mut rl = Editor::new();
     let edit_helper = EditHelper::new();
@@ -53,13 +55,20 @@ where
                 // meta command service
                 let meta_cmd_service = MetaCommandService::new();
                 if line.starts_with(".") {
-                    match meta_cmd_service.do_meta_command(line.as_str()) {
-                        MetaCommandResult::MetaCmdExit => break,
-                        MetaCommandResult::MetaCmdUnrecognizedCmd => {
-                            println!("Unrecognized command '{}'\n", line);
-                            continue;
+                    match meta_cmd_service.do_meta_command(line.as_str(), table.clone()) {
+                        Ok(meta_res) => {
+                            match meta_res {
+                                MetaCommandResult::MetaCmdExit => break,
+                                MetaCommandResult::MetaCmdUnrecognizedCmd => {
+                                    println!("Unrecognized command '{}'\n", line);
+                                    continue;
+                                }
+                                MetaCommandResult::MetaCmdSuccess => continue,
+                            }
                         }
-                        MetaCommandResult::MetaCmdSuccess => continue,
+                        Err(e) => {
+                            println!("Unexpected error: {:?}", e);
+                        }
                     }
                 }
 
@@ -72,9 +81,25 @@ where
                     println!("{}", res);
                     continue;
                 }
-                println!("{:?}", stmt);
+                // println!("{:?}", stmt);
 
-                func(&line);
+                // execute statement
+                let executor = Executor::new();
+                match executor.execute_statement(&stmt, table.clone()) {
+                    Ok(exec_res) => {
+                        match exec_res {
+                            ExecuteResult::ExecuteSuccess => {
+                                println!("Executed.");
+                            },
+                            ExecuteResult::ExecuteDuplicateKey => {
+                                println!()
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        println!("Unexpected error: {:?}", e);
+                    }
+                }
             }
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");

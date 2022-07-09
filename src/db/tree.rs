@@ -1,4 +1,4 @@
-use std::{mem, num};
+use std::mem;
 
 use super::error::{DbError, DbResult};
 use super::pager::{PAGE_SIZE, Pager};
@@ -58,9 +58,9 @@ const INTERNAL_NODE_HEADER_SIZE: usize =
  */
 const INTERNAL_NODE_KEY_SIZE: usize = mem::size_of::<u32>();
 const INTERNAL_NODE_CHILD_SIZE: usize = mem::size_of::<u32>();
-const INTERNAL_NODE_CELL_SIZE: usize = INTERNAL_NODE_CHILD_SIZE + INTERNAL_NODE_KEY_SIZE;
+pub const INTERNAL_NODE_CELL_SIZE: usize = INTERNAL_NODE_CHILD_SIZE + INTERNAL_NODE_KEY_SIZE;
 /* Keep this small for testing */
-const INTERNAL_NODE_MAX_CELLS: usize = 3;
+pub const INTERNAL_NODE_MAX_CELLS: usize = 3;
 
 /*
  * Leaf Node Header Layout
@@ -79,16 +79,16 @@ const LEAF_NODE_KEY_SIZE: usize = mem::size_of::<u32>();
 const LEAF_NODE_KEY_OFFSET: usize = 0;
 const LEAF_NODE_VALUE_SIZE: usize = ROW_SIZE;
 const LEAF_NODE_VALUE_OFFSET: usize = LEAF_NODE_KEY_OFFSET + LEAF_NODE_KEY_SIZE;
-const LEAF_NODE_CELL_SIZE: usize = LEAF_NODE_KEY_SIZE + LEAF_NODE_VALUE_SIZE;
+pub const LEAF_NODE_CELL_SIZE: usize = LEAF_NODE_KEY_SIZE + LEAF_NODE_VALUE_SIZE;
 const LEAF_NODE_SPACE_FOR_CELLS: usize = PAGE_SIZE - LEAF_NODE_HEADER_SIZE;
-const LEAF_NODE_MAX_CELLS: usize = LEAF_NODE_SPACE_FOR_CELLS / LEAF_NODE_CELL_SIZE;
-const LEAF_NODE_RIGHT_SPLIT_COUNT: usize = (LEAF_NODE_MAX_CELLS + 1) / 2;
-const LEAF_NODE_LEFT_SPLIT_COUNT: usize = (LEAF_NODE_MAX_CELLS + 1) - LEAF_NODE_RIGHT_SPLIT_COUNT;
+pub const LEAF_NODE_MAX_CELLS: usize = LEAF_NODE_SPACE_FOR_CELLS / LEAF_NODE_CELL_SIZE;
+pub const LEAF_NODE_RIGHT_SPLIT_COUNT: usize = (LEAF_NODE_MAX_CELLS + 1) / 2;
+pub const LEAF_NODE_LEFT_SPLIT_COUNT: usize = (LEAF_NODE_MAX_CELLS + 1) - LEAF_NODE_RIGHT_SPLIT_COUNT;
 
 // methods for low-level b-tree implementation
 
 // ----------- print -----------------//
-fn print_constants() {
+pub fn print_constants() {
     println!("ROW_SIZE: {}", ROW_SIZE);
     println!("COMMON_NODE_HEADER_SIZE: {}", COMMON_NODE_HEADER_SIZE);
     println!("LEAF_NODE_HEADER_SIZE: {}", LEAF_NODE_HEADER_SIZE);
@@ -103,7 +103,7 @@ fn indent(level: u32) {
     }
 }
 
-fn print_tree(pager: &mut Pager, page_num: usize, indentation_level: u32) -> DbResult<()> {
+pub fn print_tree(pager: &mut Pager, page_num: usize, indentation_level: u32) -> DbResult<()> {
     let node = pager.get_page(page_num)?;
     let mut num_keys: u32 = 0;
     let mut child: u32 = 0;
@@ -180,7 +180,7 @@ fn set_node_type(node: *mut c_void, n_type: NodeType) {
     }
 }
 
-fn is_node_root(node: *const c_void) -> bool {
+pub fn is_node_root(node: *const c_void) -> bool {
     unsafe {
         let node_root_ptr = (node as *const u8)
             .offset(IS_ROOT_OFFSET as isize);
@@ -197,7 +197,7 @@ pub fn set_node_root(node: *mut c_void, is_root: bool) {
     }
 }
 
-fn node_parent(node: *mut c_void) -> *mut u32 {
+pub fn node_parent(node: *mut c_void) -> *mut u32 {
     unsafe {
         return (node as *const u8)
             .offset(PARENT_POINTER_OFFSET as isize) 
@@ -205,7 +205,7 @@ fn node_parent(node: *mut c_void) -> *mut u32 {
     }
 }
 
-fn internal_node_num_keys(node: *mut c_void) -> *mut u32 {
+pub fn internal_node_num_keys(node: *mut c_void) -> *mut u32 {
     unsafe {
         return (node as *const u8)
             .offset(INTERNAL_NODE_NUM_KEYS_OFFSET as isize) 
@@ -213,7 +213,7 @@ fn internal_node_num_keys(node: *mut c_void) -> *mut u32 {
     }
 }
 
-fn internal_node_right_child(node: *mut c_void) -> *mut u32 {
+pub fn internal_node_right_child(node: *mut c_void) -> *mut u32 {
     unsafe {
         return (node as *const u8)
             .offset(INTERNAL_NODE_RIGHT_CHILD_OFFSET as isize) 
@@ -221,7 +221,7 @@ fn internal_node_right_child(node: *mut c_void) -> *mut u32 {
     }
 }
 
-fn internal_node_cell(node: *mut c_void, cell_num: usize) -> *mut u32 {
+pub fn internal_node_cell(node: *mut c_void, cell_num: usize) -> *mut u32 {
     unsafe {
         return (node as *const u8)
             .offset(
@@ -247,7 +247,7 @@ pub fn internal_node_child(node: *mut c_void, child_num: usize) -> DbResult<*mut
     }
 }
 
-fn internal_node_key(node: *mut c_void, key_num: usize) -> *mut u32 {
+pub fn internal_node_key(node: *mut c_void, key_num: usize) -> *mut u32 {
     unsafe {
         let internal_node_key_ptr = (internal_node_cell(node, key_num) as *const u8)
             .offset(INTERNAL_NODE_CHILD_SIZE as isize)
@@ -272,7 +272,7 @@ pub fn leaf_node_next_leaf(node: *mut c_void) -> *mut u32 {
     }
 }
 
-fn leaf_node_cell(node: *mut c_void, cell_num: usize) -> *mut c_void {
+pub fn leaf_node_cell(node: *mut c_void, cell_num: usize) -> *mut c_void {
     unsafe {
         return (node as *const u8)
             .offset(LEAF_NODE_HEADER_SIZE as isize + (cell_num * LEAF_NODE_CELL_SIZE) as isize)
@@ -295,7 +295,7 @@ pub fn leaf_node_value(node: *mut c_void, cell_num: usize) -> *mut c_void {
     }
 }
 
-fn get_node_max_key(node: *mut c_void) -> u32 {
+pub fn get_node_max_key(node: *mut c_void) -> u32 {
     unsafe {
         match get_node_type(node) {
             NodeType::NodeInternal => *internal_node_key(node, *internal_node_num_keys(node) as usize - 1),
@@ -313,7 +313,7 @@ pub fn initialize_leaf_node(node: *mut c_void) {
     } 
 }
 
-fn initialize_internal_node(node: *mut c_void) {
+pub fn initialize_internal_node(node: *mut c_void) {
     set_node_type(node, NodeType::NodeInternal);
     set_node_root(node, false);
     unsafe {
@@ -347,4 +347,10 @@ pub fn internal_node_find_child(node: *mut c_void, key: u32) -> u32 {
       }
     }
     min_index
-  }
+}
+
+pub fn update_internal_node_key(node: *mut c_void, old_key: u32, new_key: u32) {
+    let old_child_index = internal_node_find_child(node, old_key);
+    unsafe {*internal_node_key(node, old_child_index as usize) = new_key;}
+}
+

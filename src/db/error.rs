@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum DbError {
     IoError(std::io::Error),
     Other(String),

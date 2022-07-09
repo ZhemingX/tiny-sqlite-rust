@@ -1,5 +1,5 @@
-mod cursor;
-mod error;
+pub mod cursor;
+pub mod error;
 mod pager;
-mod table;
+pub mod table;
 pub mod tree;

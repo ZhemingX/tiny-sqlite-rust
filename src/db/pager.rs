@@ -138,6 +138,6 @@ impl Pager {
     go onto the end of the database file
     */
     pub fn get_unused_page_num(&self) -> usize { 
-        return self.num_pages; 
+        self.num_pages
     }
 }

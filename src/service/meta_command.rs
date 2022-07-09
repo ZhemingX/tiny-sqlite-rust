@@ -1,3 +1,9 @@
+use std::rc::Rc;
+
+use crate::db::tree::*;
+use crate::db::table::Table;
+use crate::db::error::{DbError, DbResult};
+
 pub enum MetaCommandResult {
     MetaCmdSuccess,
     MetaCmdExit,
@@ -11,22 +17,25 @@ impl MetaCommandService {
         Self {}
     }
 
-    pub fn do_meta_command(&self, cmd: &str) -> MetaCommandResult {
+    pub fn do_meta_command(&self, cmd: &str, table: Rc<Table>) -> DbResult<MetaCommandResult> {
         match cmd {
-            ".exit;" => MetaCommandResult::MetaCmdExit,
+            ".exit;" => {
+                table.db_close()?;
+                Ok(MetaCommandResult::MetaCmdExit)
+            },
             ".btree;" => {
-                // TODO
                 println!("print btree\n");
-                MetaCommandResult::MetaCmdSuccess
+                print_tree(&mut table.pager.borrow_mut(), 0, 0)?;
+                Ok(MetaCommandResult::MetaCmdSuccess)
             }
             ".constants;" => {
-                // TODO
                 println!("print constants\n");
-                MetaCommandResult::MetaCmdSuccess
+                print_constants();
+                Ok(MetaCommandResult::MetaCmdSuccess)
             }
             _ => {
                 // unrecognized command
-                MetaCommandResult::MetaCmdUnrecognizedCmd
+                Ok(MetaCommandResult::MetaCmdUnrecognizedCmd)
             }
         }
     }

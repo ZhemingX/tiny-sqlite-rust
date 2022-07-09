@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::rc::Rc;
 
 mod cli;
 mod db;
@@ -8,11 +9,12 @@ mod util;
 
 use cli::header::print_sqlite_logo;
 use cli::run_loop;
-use service::Row;
-use crate::util::{str2dst, zascii};
+use crate::db::table::Table;
+use crate::service::Row;
+use crate::util::zascii;
 
 use clap::Parser;
-use libc::{self, c_char, c_void};
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
@@ -29,13 +31,16 @@ fn main() {
         println!("DB file: {:?}\n", db_name);
     }
 
-    // let mut r = Row::default();
-    // r.id = 3;
-    // r.set_email("aaaaa.com");
-    // r.set_username("dddddxzzzzm");
-    // println!("email: {}", zascii(&r.email));
-    // println!("username: {}", zascii(&r.username));
-    // println!("Row: {}", r);
+    let table = Rc::new(Table::db_open(db_name)
+    .map_err(|e| println!("Unexpected error: {:?}", e)).unwrap());
+
+    let mut r = Row::default();
+    r.id = 3;
+    r.set_email("aaaaa.com");
+    r.set_username("dddddxzzzzm");
+    println!("email: {}", zascii(&r.email));
+    println!("username: {}", zascii(&r.username));
+    println!("Row: {}", r);
 
     // let page: *mut c_void = unsafe {
     //     // Cache miss. Allocate memory and load from file.
@@ -53,7 +58,5 @@ fn main() {
 
     print_sqlite_logo();
 
-    run_loop(move |s| {
-        println!("implement sql service! for {}", s);
-    });
+    run_loop(table);
 }
